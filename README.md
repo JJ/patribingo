@@ -1,0 +1,2 @@
+# patribingo
+Bingo para clase
