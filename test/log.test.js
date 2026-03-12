@@ -11,7 +11,7 @@ const os = require('os');
 const tmpDir = path.join(os.tmpdir(), `patribingo-log-test-${process.pid}`);
 process.env.LOG_DIR = tmpDir;
 
-const { logCSV, getLogFilePath } = require('../server.js');
+const { logCSV, getLogFilePath } = require('../lib/logger.js');
 
 describe('CSV logging', () => {
   before(() => {

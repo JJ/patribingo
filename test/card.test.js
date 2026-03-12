@@ -3,7 +3,7 @@
 const { test, describe } = require('node:test');
 const assert = require('node:assert/strict');
 
-const { generateCard, events, GRID_SIZE } = require('../server.js');
+const { generateCard, events, GRID_SIZE } = require('../lib/card.js');
 
 describe('generateCard', () => {
   test('returns GRID_SIZE rows', () => {
