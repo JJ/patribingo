@@ -27,7 +27,7 @@ let bingoWinner = null;
 
 // ── Logging ──────────────────────────────────────────────────────────────────
 
-const logsDir = path.join(__dirname, 'logs');
+const logsDir = process.env.LOG_DIR || path.join(__dirname, 'logs');
 if (!fs.existsSync(logsDir)) {
   fs.mkdirSync(logsDir, { recursive: true });
 }
@@ -203,4 +203,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { app, server, generateCard, events, GRID_SIZE };
+module.exports = { app, server, generateCard, events, GRID_SIZE, logCSV, getLogFilePath };

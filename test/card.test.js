@@ -71,7 +71,7 @@ describe('events.json', () => {
   });
 
   test('count allows a perfect square grid', () => {
-    assert.ok(events.length >= GRID_SIZE * GRID_SIZE,
-      `events (${events.length}) too few for a ${GRID_SIZE}×${GRID_SIZE} grid`);
+    assert.equal(events.length, GRID_SIZE * GRID_SIZE,
+      `events (${events.length}) is a perfect ${GRID_SIZE}×${GRID_SIZE} grid`);
   });
 });
