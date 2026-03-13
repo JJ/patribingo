@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Patribingo</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <h1>🎱 Patribingo</h1>
+  <p style="color:#666;margin-bottom:1rem;">El bingo de clase</p>
+
+  <!-- Nick selection -->
+  <form id="nick-form">
+    <label for="nick-input">Elige tu nick:</label>
+    <input id="nick-input" type="text" maxlength="40" placeholder="Tu nombre…" required autocomplete="off" />
+    <button type="submit">¡Jugar!</button>
+  </form>
+
+  <!-- Game area (hidden until nick chosen) -->
+  <div id="game-area">
+    <div id="card-header">
+      <span>Jugador: <strong id="player-nick"></strong></span>
+      <span style="color:#888;font-size:.85rem;">Marca los eventos que veas en clase</span>
+    </div>
+    <div id="bingo-grid"></div>
+  </div>
+
+  <!-- Toast notifications -->
+  <div id="notifications"></div>
+
+  <!-- Bingo overlay -->
+  <div id="bingo-overlay">
+    <div id="bingo-banner">
+      <h2>🎉 ¡BINGO!</h2>
+      <p id="bingo-msg"></p>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    let myNick = '';
+    let myCard = [];   // 2-D array of { event, visible }
+    let checked = new Set();
+    let gameOver = false;
+
+    // ── Nick form ───────────────────────────────────────────────────
+    document.getElementById('nick-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const nick = document.getElementById('nick-input').value.trim();
+      if (!nick) return;
+      myNick = nick;
+      document.getElementById('nick-form').style.display = 'none';
+      document.getElementById('player-nick').textContent = myNick;
+      socket.emit('join', myNick);
+    });
+
+    // ── Card rendering ──────────────────────────────────────────────
+    socket.on('card', (card) => {
+      myCard = card;
+      renderCard();
+      document.getElementById('game-area').style.display = 'block';
+    });
+
+    function renderCard() {
+      const grid = document.getElementById('bingo-grid');
+      const cols = myCard[0].length;
+      grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+      grid.innerHTML = '';
+
+      myCard.forEach((row) => {
+        row.forEach((cell) => {
+          const div = document.createElement('div');
+          div.classList.add('bingo-cell');
+
+          if (!cell.visible) {
+            div.classList.add('hidden');
+            div.textContent = '—';
+          } else {
+            div.textContent = cell.event;
+            div.dataset.event = cell.event;
+            if (checked.has(cell.event)) div.classList.add('checked');
+            div.addEventListener('click', () => onCellClick(div, cell.event));
+          }
+          grid.appendChild(div);
+        });
+      });
+    }
+
+    function onCellClick(div, event) {
+      if (gameOver || checked.has(event)) return;
+      checked.add(event);
+      div.classList.add('checked');
+      socket.emit('checkEvent', event);
+    }
+
+    // ── Line notification ───────────────────────────────────────────
+    socket.on('line', (nick) => {
+      showNotif(`🎯 ${nick} ha cantado línea`, 'line');
+    });
+
+    // ── Bingo ───────────────────────────────────────────────────────
+    socket.on('bingo', (nick) => {
+      gameOver = true;
+      launchBalloons();
+      document.getElementById('bingo-msg').textContent = `¡${nick} ha cantado bingo!`;
+      document.getElementById('bingo-overlay').classList.add('active');
+    });
+
+    socket.on('gameOver', (nick) => {
+      gameOver = true;
+      document.getElementById('bingo-msg').textContent =
+        nick ? `¡${nick} ya ha cantado bingo!` : '¡El juego ha terminado!';
+      document.getElementById('bingo-overlay').classList.add('active');
+    });
+
+    // ── Helpers ─────────────────────────────────────────────────────
+    function showNotif(text, type = '') {
+      const notif = document.createElement('div');
+      notif.className = 'notif' + (type ? ` ${type}` : '');
+      notif.textContent = text;
+      document.getElementById('notifications').prepend(notif);
+      setTimeout(() => notif.remove(), 4200);
+    }
+
+    function launchBalloons() {
+      const emojis = ['🎈', '🎉', '🎊', '🎁', '⭐', '🌟'];
+      for (let i = 0; i < 18; i++) {
+        setTimeout(() => {
+          const b = document.createElement('span');
+          b.className = 'balloon';
+          b.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+          b.style.left = Math.random() * 95 + 'vw';
+          b.style.animationDuration = (3 + Math.random() * 4) + 's';
+          document.body.appendChild(b);
+          setTimeout(() => b.remove(), 8000);
+        }, i * 200);
+      }
+    }
+  </script>
+</body>
+</html>

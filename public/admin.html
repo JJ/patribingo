@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Patribingo – Admin</title>
+  <link rel="stylesheet" href="/style.css" />
+  <style>
+    body { padding-bottom: 3rem; }
+    #refresh-note { color: #888; font-size: .85rem; margin-top: .3rem; }
+  </style>
+</head>
+<body>
+  <h1>🎱 Patribingo</h1>
+  <h2>Panel de administración</h2>
+  <p id="refresh-note">Se actualiza en tiempo real</p>
+
+  <table id="admin-table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Evento</th>
+        <th>Marcados</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody id="admin-tbody"></tbody>
+  </table>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    let allEvents = [];
+    let counts = {};
+    let maxCount = 1;
+
+    async function loadEvents() {
+      const res = await fetch('/api/events');
+      const data = await res.json();
+      allEvents = data.events;
+      counts = data.counts;
+      maxCount = Math.max(1, ...Object.values(counts));
+      renderTable();
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('admin-tbody');
+      tbody.innerHTML = '';
+      allEvents.forEach((ev, idx) => {
+        const count = counts[ev] || 0;
+        const barWidth = Math.round((count / maxCount) * 160);
+        const tr = document.createElement('tr');
+        tr.id = `row-${idx}`;
+        tr.innerHTML = `
+          <td>${idx + 1}</td>
+          <td>${escHtml(ev)}</td>
+          <td><strong>${count}</strong></td>
+          <td><span class="count-bar" id="bar-${idx}" style="width:${barWidth}px"></span></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function escHtml(s) {
+      return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    // Live updates
+    socket.on('countsUpdate', ({ event, count }) => {
+      const idx = allEvents.indexOf(event);
+      if (idx === -1) return;
+      counts[event] = count;
+      maxCount = Math.max(maxCount, count);
+
+      const countCell = document.querySelector(`#row-${idx} td:nth-child(3) strong`);
+      if (countCell) countCell.textContent = count;
+
+      const bar = document.getElementById(`bar-${idx}`);
+      if (bar) bar.style.width = Math.round((count / maxCount) * 160) + 'px';
+    });
+
+    loadEvents();
+  </script>
+</body>
+</html>

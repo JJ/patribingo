@@ -1,0 +1,18 @@
+{
+  "name": "patribingo",
+  "version": "1.0.0",
+  "description": "Bingo para clase",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test test/*.test.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "express-rate-limit": "^8.3.1",
+    "socket.io": "^4.7.2"
+  },
+  "devDependencies": {
+    "supertest": "^7.2.2"
+  }
+}

@@ -1,0 +1,248 @@
+/* ── Reset & base ─────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --primary: #6c3fc5;
+  --primary-dark: #4e2d99;
+  --accent: #f0a500;
+  --bg: #f5f0ff;
+  --card-bg: #ffffff;
+  --cell-checked: #c8f7c5;
+  --cell-hidden: #e0e0e0;
+  --text: #222222;
+  --radius: 0.5rem;
+}
+
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem;
+}
+
+h1 {
+  font-size: 2.2rem;
+  color: var(--primary);
+  margin-bottom: 0.25rem;
+}
+
+h2 {
+  font-size: 1.4rem;
+  color: var(--primary-dark);
+  margin-bottom: 1rem;
+}
+
+/* ── Nick form ────────────────────────────────────────────────────── */
+#nick-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  background: var(--card-bg);
+  padding: 2rem 2.5rem;
+  border-radius: var(--radius);
+  box-shadow: 0 4px 16px rgba(108,63,197,.15);
+  margin-top: 2rem;
+}
+
+#nick-form label {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+#nick-input {
+  padding: 0.6rem 1rem;
+  font-size: 1rem;
+  border: 2px solid var(--primary);
+  border-radius: var(--radius);
+  width: 240px;
+  outline: none;
+  transition: border-color .2s;
+}
+
+#nick-input:focus { border-color: var(--accent); }
+
+#nick-form button {
+  padding: 0.6rem 1.6rem;
+  font-size: 1rem;
+  font-weight: 700;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background .2s;
+}
+
+#nick-form button:hover { background: var(--primary-dark); }
+
+/* ── Bingo card ───────────────────────────────────────────────────── */
+#game-area { display: none; width: 100%; max-width: 800px; }
+
+#card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+#player-nick { font-weight: 700; color: var(--primary); }
+
+#bingo-grid {
+  display: grid;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.bingo-row { display: contents; }
+
+.bingo-cell {
+  background: var(--card-bg);
+  border: 2px solid var(--primary);
+  border-radius: var(--radius);
+  padding: 0.6rem 0.4rem;
+  text-align: center;
+  font-size: 0.82rem;
+  line-height: 1.3;
+  cursor: pointer;
+  transition: background .18s, transform .1s;
+  user-select: none;
+  min-height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bingo-cell:hover:not(.checked):not(.hidden) { background: #ede0ff; transform: scale(1.02); }
+
+.bingo-cell.checked {
+  background: var(--cell-checked);
+  border-color: #3aad35;
+  cursor: default;
+}
+
+.bingo-cell.hidden {
+  background: var(--cell-hidden);
+  border-style: dashed;
+  cursor: default;
+  color: #999;
+  font-style: italic;
+}
+
+/* ── Notifications ────────────────────────────────────────────────── */
+#notifications {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 0.5rem;
+  z-index: 100;
+  pointer-events: none;
+}
+
+.notif {
+  background: var(--primary);
+  color: #fff;
+  padding: 0.75rem 1.25rem;
+  border-radius: var(--radius);
+  font-size: 0.95rem;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(0,0,0,.3);
+  animation: slideIn .3s ease, fadeOut .4s ease 3.6s forwards;
+  pointer-events: auto;
+}
+
+.notif.line { background: #2680c2; }
+.notif.bingo { background: #c42424; font-size: 1.2rem; }
+
+@keyframes slideIn {
+  from { transform: translateX(120%); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+
+@keyframes fadeOut {
+  to { opacity: 0; transform: translateX(120%); }
+}
+
+/* ── Bingo overlay ────────────────────────────────────────────────── */
+#bingo-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.55);
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+#bingo-overlay.active { display: flex; }
+
+#bingo-banner {
+  background: #fff;
+  border-radius: 1rem;
+  padding: 2.5rem 3rem;
+  text-align: center;
+  box-shadow: 0 8px 32px rgba(0,0,0,.4);
+  animation: pop .4s cubic-bezier(.2,1.5,.4,1);
+}
+
+#bingo-banner h2 { font-size: 2rem; color: var(--primary); }
+#bingo-banner p  { font-size: 1.2rem; margin-top: 0.5rem; }
+
+@keyframes pop {
+  from { transform: scale(.4); opacity: 0; }
+  to   { transform: scale(1);  opacity: 1; }
+}
+
+/* ── Balloons ─────────────────────────────────────────────────────── */
+.balloon {
+  position: fixed;
+  bottom: -120px;
+  font-size: 3.5rem;
+  animation: rise linear forwards;
+  z-index: 300;
+  pointer-events: none;
+}
+
+@keyframes rise {
+  from { bottom: -120px; opacity: 1; }
+  to   { bottom: 110vh;  opacity: .8; }
+}
+
+/* ── Admin page ───────────────────────────────────────────────────── */
+#admin-table {
+  width: 100%;
+  max-width: 700px;
+  border-collapse: collapse;
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(108,63,197,.12);
+  margin-top: 1rem;
+}
+
+#admin-table th, #admin-table td {
+  padding: 0.65rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+#admin-table th { background: var(--primary); color: #fff; }
+#admin-table tr:last-child td { border-bottom: none; }
+#admin-table tr:nth-child(even) td { background: #faf5ff; }
+
+.count-bar {
+  display: inline-block;
+  height: 12px;
+  background: var(--accent);
+  border-radius: 6px;
+  min-width: 4px;
+  transition: width .4s;
+  vertical-align: middle;
+}
